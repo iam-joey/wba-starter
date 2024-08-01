@@ -1,5 +1,11 @@
-import { Commitment, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js"
-import wallet from "../wba-wallet.json"
+import {
+  Commitment,
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+} from "@solana/web3.js";
+import wallet from "../wba-wallet.json";
 import { getOrCreateAssociatedTokenAccount, transfer } from "@solana/spl-token";
 
 // We're going to import our keypair from the wallet file
@@ -10,19 +16,40 @@ const commitment: Commitment = "confirmed";
 const connection = new Connection("https://api.devnet.solana.com", commitment);
 
 // Mint address
-const mint = new PublicKey("<mint address>");
+const mint = new PublicKey("CfmVE9LQqRAHmSGDVkUoRbtiHbPKERUDaZ7Skw8DT4zN");
 
 // Recipient address
-const to = new PublicKey("<receiver address>");
+const to = new PublicKey("FZ6gumx7nHXUMToQWAfYdN3dqYHW5GVTtWHViTSrmiV9");
 
 (async () => {
-    try {
-        // Get the token account of the fromWallet address, and if it does not exist, create it
+  try {
+    // Get the token account of the fromWallet address, and if it does not exist, create it
+    const fromAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      keypair,
+      mint,
+      keypair.publicKey
+    );
+    // Get the token account of the toWallet address, and if it does not exist, create it
+    const toAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      keypair,
+      mint,
+      to
+    );
+    // Transfer the new token to the "toTokenAccount" we just created
 
-        // Get the token account of the toWallet address, and if it does not exist, create it
+    const sign = await transfer(
+      connection,
+      keypair,
+      fromAccount.address,
+      toAccount.address,
+      keypair.publicKey,
+      5000000
+    );
 
-        // Transfer the new token to the "toTokenAccount" we just created
-    } catch(e) {
-        console.error(`Oops, something went wrong: ${e}`)
-    }
+    console.log(sign);
+  } catch (e) {
+    console.error(`Oops, something went wrong: ${e}`);
+  }
 })();
